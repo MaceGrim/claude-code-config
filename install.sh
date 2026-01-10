@@ -1,0 +1,191 @@
+#!/bin/bash
+# Claude Code Configuration Installer
+#
+# This script installs the Claude Code configuration from this repository.
+# Run from the cloned repository directory.
+#
+# Usage: ./install.sh [--dry-run]
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLAUDE_DIR="$HOME/.claude"
+DRY_RUN=false
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+# Parse arguments
+if [[ "$1" == "--dry-run" ]]; then
+    DRY_RUN=true
+    log_warn "Dry run mode - no changes will be made"
+fi
+
+run_cmd() {
+    if $DRY_RUN; then
+        echo "  Would run: $*"
+    else
+        "$@"
+    fi
+}
+
+# Check if Claude Code is installed
+check_claude_code() {
+    if ! command -v claude &> /dev/null; then
+        log_error "Claude Code CLI not found. Please install it first:"
+        echo "  npm install -g @anthropic-ai/claude-code"
+        exit 1
+    fi
+    log_success "Claude Code CLI found"
+}
+
+# Create necessary directories
+create_directories() {
+    log_info "Creating directory structure..."
+    run_cmd mkdir -p "$CLAUDE_DIR/commands"
+    run_cmd mkdir -p "$CLAUDE_DIR/skills/gemini-image/scripts"
+    run_cmd mkdir -p "$CLAUDE_DIR/hooks"
+    log_success "Directories created"
+}
+
+# Install CLAUDE.md
+install_claude_md() {
+    log_info "Installing CLAUDE.md (global instructions)..."
+    if [[ -f "$CLAUDE_DIR/CLAUDE.md" ]]; then
+        log_warn "CLAUDE.md already exists - backing up to CLAUDE.md.bak"
+        run_cmd cp "$CLAUDE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md.bak"
+    fi
+    run_cmd cp "$SCRIPT_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+    log_success "CLAUDE.md installed"
+}
+
+# Install commands
+install_commands() {
+    log_info "Installing custom commands..."
+    for cmd in "$SCRIPT_DIR"/commands/*.md; do
+        if [[ -f "$cmd" ]]; then
+            local name=$(basename "$cmd")
+            run_cmd cp "$cmd" "$CLAUDE_DIR/commands/$name"
+            log_success "  Installed command: ${name%.md}"
+        fi
+    done
+}
+
+# Install skills
+install_skills() {
+    log_info "Installing skills..."
+
+    # Gemini Image skill
+    if [[ -d "$SCRIPT_DIR/skills/gemini-image" ]]; then
+        run_cmd cp "$SCRIPT_DIR/skills/gemini-image/SKILL.md" "$CLAUDE_DIR/skills/gemini-image/"
+        run_cmd cp "$SCRIPT_DIR/skills/gemini-image/scripts/generate.py" "$CLAUDE_DIR/skills/gemini-image/scripts/"
+        run_cmd chmod +x "$CLAUDE_DIR/skills/gemini-image/scripts/generate.py"
+        log_success "  Installed skill: gemini-image"
+    fi
+}
+
+# Install hooks
+install_hooks() {
+    log_info "Installing hooks..."
+    for hook in "$SCRIPT_DIR"/hooks/*.sh; do
+        if [[ -f "$hook" ]]; then
+            local name=$(basename "$hook")
+            run_cmd cp "$hook" "$CLAUDE_DIR/hooks/$name"
+            run_cmd chmod +x "$CLAUDE_DIR/hooks/$name"
+            log_success "  Installed hook: $name"
+        fi
+    done
+}
+
+# Install settings
+install_settings() {
+    log_info "Installing settings..."
+
+    if [[ -f "$CLAUDE_DIR/settings.json" ]]; then
+        log_warn "settings.json already exists - backing up to settings.json.bak"
+        run_cmd cp "$CLAUDE_DIR/settings.json" "$CLAUDE_DIR/settings.json.bak"
+    fi
+
+    if [[ -f "$CLAUDE_DIR/settings.local.json" ]]; then
+        log_warn "settings.local.json already exists - backing up to settings.local.json.bak"
+        run_cmd cp "$CLAUDE_DIR/settings.local.json" "$CLAUDE_DIR/settings.local.json.bak"
+    fi
+
+    run_cmd cp "$SCRIPT_DIR/settings.json.template" "$CLAUDE_DIR/settings.json"
+    run_cmd cp "$SCRIPT_DIR/settings.local.json.template" "$CLAUDE_DIR/settings.local.json"
+    log_success "Settings installed"
+}
+
+# Print plugin installation instructions
+print_plugin_instructions() {
+    log_info "Plugin installation requires manual steps in Claude Code:"
+    echo ""
+    echo "  1. Start Claude Code: claude"
+    echo "  2. Add marketplaces:"
+    echo "     /plugins marketplace add anthropics/claude-plugins-official"
+    echo "     /plugins marketplace add jarrodwatts/claude-hud"
+    echo "     /plugins marketplace add k-dense-ai/claude-scientific-writer"
+    echo ""
+    echo "  3. Install plugins:"
+    echo "     /plugins install frontend-design"
+    echo "     /plugins install github"
+    echo "     /plugins install pr-review-toolkit"
+    echo "     /plugins install pyright-lsp"
+    echo "     /plugins install ralph-wiggum"
+    echo "     /plugins install playwright"
+    echo "     /plugins install code-simplifier"
+    echo "     /plugins install claude-hud"
+    echo ""
+    echo "  4. Optional: /plugins install claude-scientific-writer"
+    echo ""
+}
+
+# Print skill prerequisites
+print_skill_prerequisites() {
+    log_info "Skill prerequisites:"
+    echo ""
+    echo "  gemini-image skill requires:"
+    echo "    - Python packages: pip install google-genai pillow"
+    echo "    - Environment variable: export GEMINI_API_KEY='your-api-key'"
+    echo ""
+}
+
+# Main installation
+main() {
+    echo ""
+    echo "========================================"
+    echo "  Claude Code Configuration Installer"
+    echo "========================================"
+    echo ""
+
+    check_claude_code
+    create_directories
+    install_claude_md
+    install_commands
+    install_skills
+    install_hooks
+    install_settings
+
+    echo ""
+    echo "========================================"
+    echo "  Installation Complete!"
+    echo "========================================"
+    echo ""
+
+    print_plugin_instructions
+    print_skill_prerequisites
+
+    log_success "Configuration installed to $CLAUDE_DIR"
+    echo ""
+}
+
+main

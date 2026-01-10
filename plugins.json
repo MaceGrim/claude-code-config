@@ -1,0 +1,76 @@
+{
+  "description": "List of plugins to install on new machines",
+  "marketplaces": [
+    {
+      "name": "claude-plugins-official",
+      "repo": "anthropics/claude-plugins-official",
+      "description": "Official Anthropic plugin marketplace"
+    },
+    {
+      "name": "claude-hud",
+      "repo": "jarrodwatts/claude-hud",
+      "description": "Status line HUD plugin"
+    },
+    {
+      "name": "claude-scientific-writer",
+      "repo": "k-dense-ai/claude-scientific-writer",
+      "description": "Scientific writing assistant (disabled by default)"
+    }
+  ],
+  "plugins": [
+    {
+      "name": "frontend-design",
+      "marketplace": "claude-plugins-official",
+      "enabled": true,
+      "description": "Create distinctive, production-grade frontend interfaces"
+    },
+    {
+      "name": "github",
+      "marketplace": "claude-plugins-official",
+      "enabled": true,
+      "description": "GitHub integration for PR management"
+    },
+    {
+      "name": "pr-review-toolkit",
+      "marketplace": "claude-plugins-official",
+      "enabled": true,
+      "description": "Comprehensive PR review tools"
+    },
+    {
+      "name": "pyright-lsp",
+      "marketplace": "claude-plugins-official",
+      "enabled": true,
+      "description": "Python type checking via Pyright LSP"
+    },
+    {
+      "name": "ralph-wiggum",
+      "marketplace": "claude-plugins-official",
+      "enabled": true,
+      "description": "Ralph Wiggum quotes (fun)"
+    },
+    {
+      "name": "playwright",
+      "marketplace": "claude-plugins-official",
+      "enabled": true,
+      "description": "Browser automation and testing"
+    },
+    {
+      "name": "code-simplifier",
+      "marketplace": "claude-plugins-official",
+      "enabled": true,
+      "description": "Simplify and refine code for clarity"
+    },
+    {
+      "name": "claude-hud",
+      "marketplace": "claude-hud",
+      "enabled": true,
+      "description": "Status line display with context info"
+    },
+    {
+      "name": "claude-scientific-writer",
+      "marketplace": "claude-scientific-writer",
+      "enabled": false,
+      "description": "Scientific writing assistance"
+    }
+  ]
+}
