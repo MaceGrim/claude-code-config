@@ -51,7 +51,25 @@ Optional (disabled by default):
 /plugins install claude-scientific-writer
 ```
 
-### Step 4: Install Skill Prerequisites
+### Step 4: Install Beads (bd)
+
+The hooks use `bd` (Beads) for task tracking. Install it:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash
+```
+
+Or via npm:
+```bash
+npm install -g @beads/bd
+```
+
+Verify installation:
+```bash
+bd --version
+```
+
+### Step 5: Install Skill Prerequisites
 
 For the **gemini-image** skill:
 ```bash
@@ -63,7 +81,7 @@ Then add to your shell profile (~/.bashrc or ~/.zshrc):
 export GEMINI_API_KEY='your-api-key-here'
 ```
 
-### Step 5: Verify Installation
+### Step 6: Verify Installation
 
 Restart Claude Code and verify:
 1. Run `/dayprep` to test the dayprep command
@@ -94,7 +112,7 @@ Restart Claude Code and verify:
 | Hook | Trigger | Description |
 |------|---------|-------------|
 | check-readme-after-commit.sh | PostToolUse (Bash) | After git commits, prompts to check if README needs updating |
-| bd prime | SessionStart, PreCompact | Runs BuildEngine prime command |
+| bd prime | SessionStart, PreCompact | Loads Beads issue context into session (requires `bd` installed) |
 
 ### Plugins
 
@@ -187,12 +205,26 @@ chmod +x ~/.claude/skills/gemini-image/scripts/generate.py
 
 These integrations are assumed but require separate setup:
 
-1. **Todoist MCP Server** - For dayprep and done commands
-2. **Google Calendar MCP Server** - For dayprep command
-3. **OpenAI Codex CLI** - For codex-review command
-4. **BuildEngine (bd)** - For session hooks
+### Required Tools
 
-Configure these MCP servers separately based on your accounts.
+1. **Beads (bd)** - Distributed issue tracker for session hooks
+   - Repo: https://github.com/steveyegge/beads
+   - Install: `curl -fsSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash`
+   - Or: `npm install -g @beads/bd`
+   - Used by: SessionStart hook, PreCompact hook (`bd prime`)
+
+2. **OpenAI Codex CLI** - For codex-review command
+   - Install: `npm install -g @openai/codex`
+
+### MCP Servers (configure separately)
+
+3. **Todoist MCP Server** - For dayprep and done commands
+   - Requires Todoist API token
+
+4. **Google Calendar MCP Server** - For dayprep command
+   - Requires Google OAuth setup
+
+Configure MCP servers in Claude Code settings based on your accounts.
 
 ---
 
