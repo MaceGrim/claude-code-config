@@ -2,6 +2,39 @@
 
 This repository contains my complete Claude Code setup, including commands, skills, hooks, plugins, and settings. Use this to replicate my configuration on new machines.
 
+## Autonomous Workflow
+
+The core workflow for autonomous task execution:
+
+```
+/seed   --> Interviews you --> writes SPEC.md --> asks to continue
+        |
+        v (if yes)
+/adversarial-spec --> multi-model debate --> PRD.md + prd.json --> asks to implement
+        |
+        v (if yes)
+/ralph  --> spawns subagents per task --> autonomous until done
+```
+
+Just run `/seed "your project idea"` and it chains through the whole pipeline with confirmations at each step.
+
+### Quick Task (simple projects)
+```
+/ralph "Build X that does Y. Done when Z. Verify: command"
+```
+
+### Skill Reference
+
+| Skill | Purpose | Output |
+|-------|---------|--------|
+| `/seed` | Deep interview to capture requirements | SPEC.md |
+| `/adversarial-spec` | Multi-model debate (Claude, Codex, Gemini) | PRD.md, TECH_SPEC.md, prd.json |
+| `/ralph` | Autonomous execution with fresh context per task | Completed code |
+| `/ralph status` | Check task progress | TaskList + attempt history |
+| `/council` | Ask Claude, Codex, and Gemini to weigh in on a question | Synthesized answer |
+
+---
+
 ## Quick Start (For Claude Code)
 
 If you're a Claude Code instance reading this to install the configuration, follow these exact steps:
@@ -16,9 +49,9 @@ chmod +x install.sh
 
 This will install:
 - `CLAUDE.md` - Global instructions
-- Custom commands (dayprep, done, seed, codex-review)
+- Custom commands (ralph, adversarial-spec, seed, council, etc.)
 - Skills (gemini-image)
-- Hooks (check-readme-after-commit.sh)
+- Hooks (atomic-commit-guard, session-context, ntfy notifications, etc.)
 - Settings templates
 
 ### Step 2: Install Plugin Marketplaces
@@ -40,7 +73,6 @@ Install each plugin (run in Claude Code):
 /plugins install github
 /plugins install pr-review-toolkit
 /plugins install pyright-lsp
-/plugins install ralph-wiggum
 /plugins install playwright
 /plugins install code-simplifier
 /plugins install claude-hud
@@ -48,26 +80,17 @@ Install each plugin (run in Claude Code):
 
 Optional (disabled by default):
 ```
+/plugins install ralph-wiggum
 /plugins install claude-scientific-writer
 ```
 
-### Step 4: Install Beads (bd)
+### Step 4: Configure ntfy Notifications (Optional)
 
-The hooks use `bd` (Beads) for task tracking. Install it:
+For push notifications when Claude finishes long-running tasks:
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash
-```
-
-Or via npm:
-```bash
-npm install -g @beads/bd
-```
-
-Verify installation:
-```bash
-bd --version
-```
+1. Pick a topic name at [ntfy.sh](https://ntfy.sh) (e.g., `my-claude-notifications`)
+2. Subscribe on your phone via the ntfy app
+3. Edit `~/.claude/settings.json` and replace `YOUR-TOPIC-HERE` with your topic name
 
 ### Step 5: Install Skill Prerequisites
 
@@ -81,10 +104,21 @@ Then add to your shell profile (~/.bashrc or ~/.zshrc):
 export GEMINI_API_KEY='your-api-key-here'
 ```
 
+For **multi-model debate** (/adversarial-spec, /council):
+```bash
+# OpenAI Codex CLI
+npm install -g @openai/codex
+codex login
+
+# Google Gemini CLI
+npm install -g @google/gemini-cli
+gemini auth login
+```
+
 ### Step 6: Verify Installation
 
 Restart Claude Code and verify:
-1. Run `/dayprep` to test the dayprep command
+1. Run `/ralph status` to test the ralph command
 2. Run `/plugins list` to see installed plugins
 3. The status line should show the claude-hud output
 
@@ -96,10 +130,17 @@ Restart Claude Code and verify:
 
 | Command | Description | Usage |
 |---------|-------------|-------|
-| `/dayprep` | Plan your day - fetches todos, checks calendars, prioritizes, and schedules | `/dayprep` |
+| `/ralph` | Autonomous execution loop with fresh context per task | `/ralph` or `/ralph "task"` |
+| `/adversarial-spec` | Multi-model debate to create PRD + Tech Spec | `/adversarial-spec` |
+| `/seed` | Deep project interview to create SPEC.md | `/seed <project idea>` |
+| `/council` | Ask Claude, Codex, and Gemini for perspectives | `/council <question>` |
+| `/atomic-commit` | Create small, focused atomic commits | `/atomic-commit` |
+| `/prep-for-commit` | Simplify and review code before committing | `/prep-for-commit` |
+| `/implement-spec` | Implement from TECH_SPEC.md with parallel agents | `/implement-spec` |
+| `/setup-agents` | Setup multi-agent project structure | `/setup-agents` |
+| `/dayprep` | Plan your day - fetches todos, checks calendars | `/dayprep` |
 | `/done` | Mark a task complete in Todoist and remove from calendar | `/done <task name>` |
-| `/seed` | Deep project interview to create SPEC.md with zero ambiguity | `/seed <project idea>` |
-| `/codex-review` | Run OpenAI Codex to review code | `/codex-review <file>\|--repo\|--recent\|--staged` |
+| `/codex-review` | Run OpenAI Codex to review code | `/codex-review <file>` |
 
 ### Skills
 
@@ -111,8 +152,11 @@ Restart Claude Code and verify:
 
 | Hook | Trigger | Description |
 |------|---------|-------------|
+| session-context.sh | SessionStart | Loads project context (CLAUDE.md, README, structure) into session |
+| atomic-commit-guard.py | PreToolUse (Bash) | Blocks oversized commits, enforces atomic commit standards |
 | check-readme-after-commit.sh | PostToolUse (Bash) | After git commits, prompts to check if README needs updating |
-| bd prime | SessionStart, PreCompact | Loads Beads issue context into session (requires `bd` installed) |
+| codex-review-after-commit.sh | PostToolUse (Bash) | Optionally triggers Codex review after commits |
+| notify-job-done.py | Notification | Sends push notification via ntfy when Claude finishes |
 
 ### Plugins
 
@@ -121,26 +165,26 @@ Restart Claude Code and verify:
 - `github` - GitHub integration for PR management
 - `pr-review-toolkit` - Comprehensive PR review tools (code-reviewer, pr-test-analyzer, silent-failure-hunter, etc.)
 - `pyright-lsp` - Python type checking via Pyright LSP
-- `ralph-wiggum` - Ralph Wiggum quotes
 - `playwright` - Browser automation and testing
 - `code-simplifier` - Simplify and refine code for clarity
 
 **From claude-hud:**
 - `claude-hud` - Status line display with context info
 
-**From claude-scientific-writer (disabled by default):**
-- `claude-scientific-writer` - Scientific writing assistance
+**Optional:**
+- `ralph-wiggum` - Ralph Wiggum quotes (disabled by default)
+- `claude-scientific-writer` - Scientific writing assistance (disabled by default)
 
 ### Settings
 
 #### settings.json
-- Hooks configuration (PostToolUse, PreCompact, SessionStart)
+- Hooks configuration (PreToolUse, PostToolUse, SessionStart, Notification)
 - Status line using claude-hud
 - Enabled plugins list
-- Base permissions for BuildEngine commands
 
 #### settings.local.json
 - Additional permissions (powershell, docker, web search/fetch)
+- Codex/Gemini CLI permissions for multi-model debate
 - Machine-specific overrides
 
 #### CLAUDE.md (Global Instructions)
@@ -162,17 +206,28 @@ claude-code-config/
 ├── settings.local.json.template   # Local settings template
 ├── plugins.json                   # Plugin/marketplace reference
 ├── commands/
+│   ├── adversarial-spec.md        # Multi-model spec debate
+│   ├── atomic-commit.md           # Atomic commit workflow
 │   ├── codex-review.md            # OpenAI Codex code review
+│   ├── council.md                 # Multi-model consultation
 │   ├── dayprep.md                 # Daily planning assistant
 │   ├── done.md                    # Task completion helper
-│   └── seed.md                    # Project spec interviewer
+│   ├── implement-spec.md          # Spec implementation
+│   ├── prep-for-commit.md         # Pre-commit review
+│   ├── ralph.md                   # Autonomous task executor
+│   ├── seed.md                    # Project spec interviewer
+│   └── setup-agents.md            # Multi-agent setup
 ├── skills/
 │   └── gemini-image/
 │       ├── SKILL.md               # Skill definition
 │       └── scripts/
 │           └── generate.py        # Image generation script
 └── hooks/
-    └── check-readme-after-commit.sh  # README update checker
+    ├── atomic-commit-guard.py     # Commit size guard
+    ├── check-readme-after-commit.sh  # README update checker
+    ├── codex-review-after-commit.sh  # Post-commit Codex review
+    ├── notify-job-done.py         # ntfy push notifications
+    └── session-context.sh         # Session context loader
 ```
 
 ---
@@ -190,12 +245,13 @@ cp CLAUDE.md ~/.claude/
 cp commands/*.md ~/.claude/commands/
 cp skills/gemini-image/SKILL.md ~/.claude/skills/gemini-image/
 cp skills/gemini-image/scripts/generate.py ~/.claude/skills/gemini-image/scripts/
-cp hooks/*.sh ~/.claude/hooks/
+cp hooks/*.sh hooks/*.py ~/.claude/hooks/
 cp settings.json.template ~/.claude/settings.json
 cp settings.local.json.template ~/.claude/settings.local.json
 
 # Make executable
 chmod +x ~/.claude/hooks/*.sh
+chmod +x ~/.claude/hooks/*.py
 chmod +x ~/.claude/skills/gemini-image/scripts/generate.py
 ```
 
@@ -207,14 +263,23 @@ These integrations are assumed but require separate setup:
 
 ### Required Tools
 
-1. **Beads (bd)** - Distributed issue tracker for session hooks
-   - Repo: https://github.com/steveyegge/beads
-   - Install: `curl -fsSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash`
-   - Or: `npm install -g @beads/bd`
-   - Used by: SessionStart hook, PreCompact hook (`bd prime`)
-
-2. **OpenAI Codex CLI** - For codex-review command
+1. **OpenAI Codex CLI** - For multi-model debate and codex-review
    - Install: `npm install -g @openai/codex`
+   - Auth: `codex login`
+
+2. **Google Gemini CLI** - For multi-model debate
+   - Install: `npm install -g @google/gemini-cli`
+   - Auth: `gemini auth login`
+
+### Optional: ntfy Push Notifications
+
+[ntfy.sh](https://ntfy.sh) provides free push notifications. When Claude finishes a task, you get notified on your phone.
+
+1. Install the ntfy app on your phone
+2. Subscribe to a topic (e.g., `my-claude-notifications`)
+3. Edit `~/.claude/settings.json`:
+   - Find `ntfy.sh/YOUR-TOPIC-HERE`
+   - Replace `YOUR-TOPIC-HERE` with your topic name
 
 ### MCP Servers (configure separately)
 
@@ -234,3 +299,4 @@ Configure MCP servers in Claude Code settings based on your accounts.
 - The statusLine command dynamically finds the claude-hud installation path
 - Permissions in settings.local.json may need adjustment for your specific use cases
 - Plugin versions may differ; the install commands will get the latest versions
+- The atomic commit guard blocks commits with >5 files or >300 lines changed (use `[bulk]` to override)

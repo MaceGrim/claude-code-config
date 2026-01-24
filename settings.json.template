@@ -1,14 +1,20 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "allow": [
-      "Bash(bd:*)",
-      "Bash(bd create:*)",
-      "Bash(bd dep add:*)",
-      "Bash(bd prime:*)"
-    ]
+    "allow": []
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/hooks/atomic-commit-guard.py"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Bash",
@@ -16,17 +22,10 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/check-readme-after-commit.sh"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
+          },
           {
             "type": "command",
-            "command": "bd prime"
+            "command": "$HOME/.claude/hooks/codex-review-after-commit.sh"
           }
         ]
       }
@@ -37,7 +36,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd prime"
+            "command": "$HOME/.claude/hooks/session-context.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -d \"Claude is done working in the $(basename $PWD) directory.\" ntfy.sh/YOUR-TOPIC-HERE"
           }
         ]
       }
@@ -52,7 +62,7 @@
     "github@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "ralph-wiggum@claude-plugins-official": true,
+    "ralph-wiggum@claude-plugins-official": false,
     "claude-hud@claude-hud": true,
     "playwright@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,

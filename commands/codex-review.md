@@ -1,116 +1,107 @@
 ---
-allowed-tools: Bash(codex:*), Bash(git:*)
+allowed-tools: Task
 description: Run OpenAI Codex to review a repo, file, or recent changes
 argument-hint: <file-path> | --repo | --recent | --staged
 ---
 
-# Codex Code Review
+# Codex Code Review (Subagent)
 
-Use OpenAI Codex CLI to perform a comprehensive code review.
+Delegate code review to the `codex-code-reviewer` subagent to keep the main context clean.
 
 ## Current git context
 
 - Branch: !`git branch --show-current 2>/dev/null || echo "not a git repo"`
 - Recent commits: !`git log --oneline -3 2>/dev/null || echo "no commits"`
+- Working directory: !`pwd`
 
 ## Instructions
 
-Based on `$ARGUMENTS`, determine the review mode and run the appropriate codex command.
+Use the **Task tool** with `subagent_type: "codex-code-reviewer"` to delegate the review.
+
+Based on `$ARGUMENTS`, construct the appropriate prompt for the subagent:
 
 ### Mode 1: Review a specific file
 
 If the argument is a file path (e.g., `src/main.js`, `./utils.py`):
 
-```bash
-codex exec "Review the file $ARGUMENTS with focus on:
+```
+Task(
+  subagent_type: "codex-code-reviewer",
+  description: "Codex review: $ARGUMENTS",
+  prompt: "Review the file $ARGUMENTS using codex exec. Focus on:
+    1. SECURITY (CRITICAL): Injection vulnerabilities, auth issues, data exposure, hardcoded secrets, OWASP top 10
+    2. BUGS (HIGH): Null handling, race conditions, off-by-one, edge cases, error handling, resource leaks
+    3. PERFORMANCE (MEDIUM): O(n²) algorithms, memory leaks, blocking I/O, missing caching
+    4. MAINTAINABILITY (LOW): Dead code, duplication, unclear naming, complexity
+    5. TESTING GAPS: Untested edge cases, missing error path coverage
 
-1. SECURITY (CRITICAL): Check for injection vulnerabilities (SQL, command, XSS), authentication/authorization issues, data exposure, hardcoded secrets, OWASP top 10 violations.
-
-2. BUGS (HIGH): Identify null/undefined handling issues, race conditions, off-by-one errors, unhandled edge cases, improper error handling, resource leaks.
-
-3. PERFORMANCE (MEDIUM): Flag O(n²) or worse algorithms, potential memory leaks, unnecessary re-renders, blocking I/O in async contexts, missing caching opportunities.
-
-4. MAINTAINABILITY (LOW): Note dead code, code duplication, unclear naming, missing type annotations, overly complex functions, magic numbers/strings.
-
-5. TESTING GAPS: Identify untested edge cases, missing error path coverage, assertions that should exist.
-
-Format your response as:
-- Rate each finding as CRITICAL/HIGH/MEDIUM/LOW severity
-- Provide specific line numbers
-- Include concrete code fixes for each issue
-- End with a summary: total issues by severity and overall code health score (1-10)"
+    Return a structured report with:
+    - Each finding rated CRITICAL/HIGH/MEDIUM/LOW with line numbers
+    - Concrete code fixes for each issue
+    - Summary: total issues by severity and code health score (1-10)"
+)
 ```
 
 ### Mode 2: Review the entire repo
 
 If the argument is `--repo` or empty:
 
-```bash
-codex exec "Analyze this repository's architecture and code quality:
+```
+Task(
+  subagent_type: "codex-code-reviewer",
+  description: "Codex repo review",
+  prompt: "Analyze this repository using codex exec. Cover:
+    1. PROJECT STRUCTURE: Organization, separation of concerns, dependency graph
+    2. SECURITY AUDIT: Hardcoded secrets, exposed endpoints, auth gaps, vulnerable patterns
+    3. DEPENDENCY HEALTH: Outdated packages, CVEs, unnecessary deps, version conflicts
+    4. CODE PATTERNS: Design patterns, anti-patterns, god objects, circular deps
+    5. DOCUMENTATION: Critical code docs, API clarity, README quality
+    6. TECHNICAL DEBT: TODO/FIXME/HACK comments, deprecated code, refactoring needs
 
-1. PROJECT STRUCTURE: Is the codebase well-organized? Are concerns properly separated? Is the dependency graph clean or tangled?
-
-2. SECURITY AUDIT: Scan for hardcoded secrets/API keys, exposed sensitive endpoints, missing authentication checks, vulnerable patterns, insecure dependencies.
-
-3. DEPENDENCY HEALTH: Identify outdated packages, known vulnerabilities (CVEs), unnecessary dependencies, version conflicts, missing lock files.
-
-4. CODE PATTERNS: Are design patterns used consistently? Identify anti-patterns, god objects, circular dependencies, tight coupling.
-
-5. DOCUMENTATION: Is critical code documented? Are public APIs clear? Is there a README with setup instructions?
-
-6. TECHNICAL DEBT: Identify TODO/FIXME/HACK comments, deprecated code still in use, areas needing refactoring.
-
-Prioritize findings by impact and effort. Provide a prioritized action plan with concrete next steps for improving the codebase."
+    Return a prioritized action plan with concrete next steps."
+)
 ```
 
 ### Mode 3: Review recent changes
 
 If the argument is `--recent`:
 
-```bash
-codex exec "Review the most recent git changes (run: git diff HEAD~1) as a thorough code reviewer:
+```
+Task(
+  subagent_type: "codex-code-reviewer",
+  description: "Codex review: recent changes",
+  prompt: "Review the most recent git changes (git diff HEAD~1) using codex exec:
+    1. CORRECTNESS: Logic errors, edge cases, bugs introduced
+    2. BREAKING CHANGES: Backwards compatibility issues
+    3. SECURITY IMPLICATIONS: New vulnerabilities, input validation, sensitive data
+    4. COMPLETENESS: Missing tests, migrations, config updates
+    5. CONVENTIONS: Project patterns and style consistency
+    6. REVIEW VERDICT: APPROVE, REQUEST CHANGES, or BLOCK?
 
-1. CORRECTNESS: Does this change introduce bugs? Are there logic errors? Does it handle edge cases?
-
-2. BREAKING CHANGES: Could this break existing functionality? Are there backwards compatibility issues?
-
-3. SECURITY IMPLICATIONS: Does this change introduce vulnerabilities? Are inputs validated? Is sensitive data handled properly?
-
-4. COMPLETENESS: Is the change complete? Are there missing pieces (tests, migrations, config updates)?
-
-5. CONVENTIONS: Does it follow project patterns and style? Are names clear and consistent?
-
-6. REVIEW VERDICT: Would you APPROVE, REQUEST CHANGES, or BLOCK this PR?
-
-Be specific about what needs fixing. For each issue, provide the exact code change needed. Summarize as: 'X critical issues, Y improvements suggested, verdict: [APPROVE/CHANGES/BLOCK]'"
+    Return: 'X critical issues, Y improvements suggested, verdict: [APPROVE/CHANGES/BLOCK]'"
+)
 ```
 
 ### Mode 4: Review staged changes
 
 If the argument is `--staged`:
 
-```bash
-codex exec "Review the staged git changes (run: git diff --staged) before commit:
+```
+Task(
+  subagent_type: "codex-code-reviewer",
+  description: "Codex review: staged changes",
+  prompt: "Review staged git changes (git diff --staged) using codex exec:
+    1. CORRECTNESS: Logic errors, edge cases, bugs
+    2. BREAKING CHANGES: Backwards compatibility
+    3. SECURITY IMPLICATIONS: Vulnerabilities, validation, sensitive data
+    4. COMPLETENESS: Missing pieces (tests, migrations, config)
+    5. CONVENTIONS: Project patterns and style
+    6. COMMIT READINESS: Ready to commit?
 
-1. CORRECTNESS: Does this change introduce bugs? Are there logic errors? Does it handle edge cases?
-
-2. BREAKING CHANGES: Could this break existing functionality? Are there backwards compatibility issues?
-
-3. SECURITY IMPLICATIONS: Does this change introduce vulnerabilities? Are inputs validated? Is sensitive data handled properly?
-
-4. COMPLETENESS: Is the change complete? Are there missing pieces (tests, migrations, config updates)?
-
-5. CONVENTIONS: Does it follow project patterns and style? Are names clear and consistent?
-
-6. COMMIT READINESS: Is this ready to commit or should changes be made first?
-
-Be specific about what needs fixing. For each issue, provide the exact code change needed. End with: 'Ready to commit: YES/NO - [reason if no]'"
+    Return: 'Ready to commit: YES/NO - [reason if no]' with specific fixes needed."
+)
 ```
 
-## After running codex
+## After the subagent returns
 
-Present the findings to the user with:
-1. Executive summary (1-2 sentences)
-2. Critical issues requiring immediate attention
-3. Recommended improvements by priority
-4. Overall assessment and next steps
+Present the subagent's findings directly to the user. The subagent will have already structured the output, so just relay it with minimal reformatting.

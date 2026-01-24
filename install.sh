@@ -96,7 +96,17 @@ install_skills() {
 # Install hooks
 install_hooks() {
     log_info "Installing hooks..."
+    # Install shell hooks
     for hook in "$SCRIPT_DIR"/hooks/*.sh; do
+        if [[ -f "$hook" ]]; then
+            local name=$(basename "$hook")
+            run_cmd cp "$hook" "$CLAUDE_DIR/hooks/$name"
+            run_cmd chmod +x "$CLAUDE_DIR/hooks/$name"
+            log_success "  Installed hook: $name"
+        fi
+    done
+    # Install Python hooks
+    for hook in "$SCRIPT_DIR"/hooks/*.py; do
         if [[ -f "$hook" ]]; then
             local name=$(basename "$hook")
             run_cmd cp "$hook" "$CLAUDE_DIR/hooks/$name"
@@ -156,6 +166,15 @@ print_skill_prerequisites() {
     echo "  gemini-image skill requires:"
     echo "    - Python packages: pip install google-genai pillow"
     echo "    - Environment variable: export GEMINI_API_KEY='your-api-key'"
+    echo ""
+    echo "  Multi-model debate (/adversarial-spec, /council) requires:"
+    echo "    - OpenAI Codex: npm install -g @openai/codex && codex login"
+    echo "    - Google Gemini: npm install -g @google/gemini-cli && gemini auth login"
+    echo ""
+    echo "  ntfy notifications (optional):"
+    echo "    - Edit ~/.claude/settings.json"
+    echo "    - Replace YOUR-TOPIC-HERE with your ntfy topic"
+    echo "    - Install ntfy app on phone and subscribe to topic"
     echo ""
 }
 

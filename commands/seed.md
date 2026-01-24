@@ -1,6 +1,7 @@
 ---
 description: Interview user in-depth about a project idea until no ambiguity remains, then write SPEC.md
 argument-hint: "Your project idea description"
+allowed-tools: Read, Write, AskUserQuestion, Skill
 ---
 
 # Seed Command: Deep Project Interview
@@ -79,5 +80,37 @@ After the interview is complete:
    - Scope boundaries (what's in AND what's out)
    - Open questions or future considerations
    - Any assumptions made
+
+## After SPEC.md is Written
+
+Once SPEC.md is written and confirmed:
+
+1. **Show the user what was created:**
+   ```
+   SPEC.md created successfully.
+
+   Summary:
+   - [Key point 1]
+   - [Key point 2]
+   - [Key point 3]
+   ```
+
+2. **Ask if they want to continue to spec hardening:**
+   ```
+   AskUserQuestion:
+   question: "Would you like to harden this spec through multi-model debate? (/adversarial-spec)"
+   options:
+     - label: "Yes, run /adversarial-spec"
+       description: "Claude, Codex, and Gemini will debate until consensus on PRD + Tech Spec"
+     - label: "No, I'll review SPEC.md first"
+       description: "Stop here so you can review and edit SPEC.md manually"
+   ```
+
+3. **If user chooses to continue:**
+   ```
+   Skill(skill="adversarial-spec")
+   ```
+
+   This will run /adversarial-spec which reads SPEC.md and produces PRD.md + prd.json through multi-model debate.
 
 Begin the interview now. Start by acknowledging the project idea and asking your first set of probing questions.
