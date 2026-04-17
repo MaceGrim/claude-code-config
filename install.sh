@@ -52,7 +52,8 @@ check_claude_code() {
 create_directories() {
     log_info "Creating directory structure..."
     run_cmd mkdir -p "$CLAUDE_DIR/commands"
-    run_cmd mkdir -p "$CLAUDE_DIR/skills/gemini-image/scripts"
+    run_cmd mkdir -p "$CLAUDE_DIR/skills"
+    run_cmd mkdir -p "$CLAUDE_DIR/agents"
     run_cmd mkdir -p "$CLAUDE_DIR/hooks"
     log_success "Directories created"
 }
@@ -83,14 +84,30 @@ install_commands() {
 # Install skills
 install_skills() {
     log_info "Installing skills..."
+    for skill_dir in "$SCRIPT_DIR"/skills/*/; do
+        if [[ -d "$skill_dir" ]]; then
+            local name
+            name=$(basename "$skill_dir")
+            run_cmd cp -r "$skill_dir" "$CLAUDE_DIR/skills/"
+            if compgen -G "$CLAUDE_DIR/skills/$name/scripts/*" > /dev/null; then
+                run_cmd chmod +x "$CLAUDE_DIR/skills/$name/scripts/"*
+            fi
+            log_success "  Installed skill: $name"
+        fi
+    done
+}
 
-    # Gemini Image skill
-    if [[ -d "$SCRIPT_DIR/skills/gemini-image" ]]; then
-        run_cmd cp "$SCRIPT_DIR/skills/gemini-image/SKILL.md" "$CLAUDE_DIR/skills/gemini-image/"
-        run_cmd cp "$SCRIPT_DIR/skills/gemini-image/scripts/generate.py" "$CLAUDE_DIR/skills/gemini-image/scripts/"
-        run_cmd chmod +x "$CLAUDE_DIR/skills/gemini-image/scripts/generate.py"
-        log_success "  Installed skill: gemini-image"
-    fi
+# Install agents
+install_agents() {
+    log_info "Installing agents..."
+    for agent in "$SCRIPT_DIR"/agents/*.md; do
+        if [[ -f "$agent" ]]; then
+            local name
+            name=$(basename "$agent")
+            run_cmd cp "$agent" "$CLAUDE_DIR/agents/$name"
+            log_success "  Installed agent: ${name%.md}"
+        fi
+    done
 }
 
 # Install hooks
@@ -191,6 +208,7 @@ main() {
     install_claude_md
     install_commands
     install_skills
+    install_agents
     install_hooks
     install_settings
 
