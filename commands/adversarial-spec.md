@@ -209,11 +209,10 @@ codex exec --skip-git-repo-check "You are reviewing a specification document. Yo
 
 DOCUMENT TYPE: [prd|tech]
 
-SPECIFICATION:
-[paste spec here]
+IMPORTANT: Read the specification from the file [PRD.md or TECH_SPEC.md] on disk. Do NOT repeat or echo the file contents back in your response — only provide your critique.
 
 CRITIQUE INSTRUCTIONS:
-1. Read the ENTIRE document carefully
+1. Read the ENTIRE document carefully from the file
 2. Identify specific issues:
    - Missing information
    - Ambiguous requirements
@@ -233,6 +232,7 @@ CRITIQUE INSTRUCTIONS:
    - Suggest a fix
 5. If you find NO issues, respond with exactly: [AGREE]
 6. Be thorough - do not agree prematurely
+7. Keep your response concise — critique only, no echoing the spec
 
 Provide your critique:" 2>&1
 ```
@@ -243,11 +243,10 @@ gemini -p "You are reviewing a specification document. Your job is to find probl
 
 DOCUMENT TYPE: [prd|tech]
 
-SPECIFICATION:
-[paste spec here]
+IMPORTANT: Read the specification from the file [PRD.md or TECH_SPEC.md] on disk. Do NOT repeat or echo the file contents back in your response — only provide your critique.
 
 CRITIQUE INSTRUCTIONS:
-1. Read the ENTIRE document carefully
+1. Read the ENTIRE document carefully from the file
 2. Identify specific issues:
    - Missing information
    - Ambiguous requirements
@@ -267,6 +266,7 @@ CRITIQUE INSTRUCTIONS:
    - Suggest a fix
 5. If you find NO issues, respond with exactly: [AGREE]
 6. Be thorough - do not agree prematurely
+7. Keep your response concise — critique only, no echoing the spec
 
 Provide your critique:" 2>&1
 ```

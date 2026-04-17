@@ -132,46 +132,6 @@ Allow user to:
 - Change models (claude/codex/gemini)
 - Add custom personas
 
-### Step 6: Generate Agent Names
-
-For each agent, generate an AdjectiveNoun name (required by Agent Mail):
-- Use nature/geography themed words
-- Examples: QuietGate, SwiftHollow, WindyCanyon, LilacGorge, BlueLake, RedFox
-
-### Step 7: Setup Agents via Agent Mail
-
-1. Read bearer token from `~/mcp_agent_mail/.env`:
-   ```bash
-   TOKEN=$(grep BEARER_TOKEN ~/mcp_agent_mail/.env | cut -d'=' -f2 | tr -d '"' | tr -d "'" | tr -d ' ')
-   ```
-
-2. Ensure project exists:
-   ```bash
-   curl -s -X POST http://127.0.0.1:8765/mcp/ \
-     -H "Authorization: Bearer $TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"ensure_project","arguments":{"human_key":"<PROJECT_PATH>"}}}'
-   ```
-
-3. Register each agent:
-   ```bash
-   curl -s -X POST http://127.0.0.1:8765/mcp/ \
-     -H "Authorization: Bearer $TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"register_agent","arguments":{
-       "project_key":"<PROJECT_PATH>",
-       "agent_name":"<AGENT_NAME>",
-       "program":"claude-code",
-       "model":"claude-opus-4-5",
-       "persona":"<ROLE> agent"
-     }}}'
-   ```
-
-   For Codex reviewer:
-   ```bash
-   # program: "codex-cli", model: "gpt-4"
-   ```
-
 ### Step 8: Create Directory Structure
 
 Create the launcher infrastructure:
@@ -255,11 +215,6 @@ cd <PROJECT_PATH>
 echo 'Starting <Role> agent: <AgentName>'
 echo ''
 
-# Start signal watcher for instant inbox notifications (background)
-~/mcp_agent_mail/signal_watcher.sh "<PROJECT_PATH>" "<AgentName>" &
-WATCHER_PID=$!
-trap "kill $WATCHER_PID 2>/dev/null" EXIT
-
 PROMPT=$(cat <PROJECT_PATH>/.agent-prompts/<agent-name-lowercase>.txt)
 
 claude --dangerously-skip-permissions --system-prompt "$PROMPT" "<Initial task instruction>"
@@ -280,11 +235,6 @@ echo '  REVIEWER AGENT: <AgentName> (Codex)'
 echo '═══════════════════════════════════════════════════════════'
 echo ''
 
-# Start signal watcher for instant inbox notifications (background)
-~/mcp_agent_mail/signal_watcher.sh "<PROJECT_PATH>" "<AgentName>" &
-WATCHER_PID=$!
-trap "kill $WATCHER_PID 2>/dev/null" EXIT
-
 codex --full-auto "<Initial task instruction with system context>"
 exec bash
 ```
@@ -293,16 +243,6 @@ Make all launcher scripts executable:
 ```bash
 chmod +x .agent-launchers/*.sh
 ```
-
-### Step 10b: Create Codex Agent Config (for inbox notifications)
-
-For Codex agents (typically the Reviewer), create a `.codex-agent` file in the project root so the Agent Mail notify hook can find the agent name:
-
-```bash
-echo "<ReviewerAgentName>" > .codex-agent
-```
-
-This enables the universal notify hook in `~/.codex/config.toml` to check the reviewer's inbox after each turn and print reminders when messages arrive.
 
 ### Step 11: Create Main Launcher Script
 
@@ -510,25 +450,3 @@ This opens terminal windows for each agent and they begin working immediately.
 - Use `--deps` flag for dependencies, NOT `--depends-on`
 - Use `--label` for categorization
 - Use `bd close <task-id>` to complete tasks
-
-**Agent Mail Inbox Notifications (Signal Files - RECOMMENDED):**
-- Agent Mail has a built-in signal file notification system for instant notifications
-- Enable in `~/mcp_agent_mail/.env`:
-  ```
-  NOTIFICATIONS_ENABLED=true
-  NOTIFICATIONS_SIGNALS_DIR=~/.mcp_agent_mail/signals
-  NOTIFICATIONS_INCLUDE_METADATA=true
-  ```
-- Signal files written to: `{signals_dir}/projects/{project_slug}/agents/{agent}.signal`
-- Use `signal_watcher.sh` to watch for notifications:
-  ```bash
-  ~/mcp_agent_mail/signal_watcher.sh /path/to/project AgentName &
-  ```
-- Requires `inotifywait` (Linux: `apt install inotify-tools`) or `fswatch` (macOS: `brew install fswatch`)
-- Start the watcher in each launcher script before launching the agent
-
-**Alternative: Polling-based notifications:**
-- Use `inbox_watcher.sh` for polling-based notifications (when signal files not available)
-- Codex uses a global notify hook in `~/.codex/config.toml`
-- The hook reads `.codex-agent` from the project to find the agent name
-- Workers (Claude) should be prompted to check inbox after sending review requests
