@@ -133,6 +133,20 @@ install_hooks() {
     done
 }
 
+# Install multi-account profile support (setup-profiles.sh + claude-profiles.sh)
+install_profiles() {
+    log_info "Installing multi-account profile scripts..."
+    if [[ -f "$SCRIPT_DIR/setup-profiles.sh" ]]; then
+        run_cmd cp "$SCRIPT_DIR/setup-profiles.sh" "$CLAUDE_DIR/setup-profiles.sh"
+        run_cmd chmod +x "$CLAUDE_DIR/setup-profiles.sh"
+        log_success "  Installed setup-profiles.sh"
+    fi
+    if [[ -f "$SCRIPT_DIR/claude-profiles.sh" ]]; then
+        run_cmd cp "$SCRIPT_DIR/claude-profiles.sh" "$CLAUDE_DIR/claude-profiles.sh"
+        log_success "  Installed claude-profiles.sh"
+    fi
+}
+
 # Install settings
 install_settings() {
     log_info "Installing settings..."
@@ -176,6 +190,25 @@ print_plugin_instructions() {
     echo ""
 }
 
+# Print multi-account profile setup instructions
+print_profile_instructions() {
+    log_info "Multi-account profile setup (optional):"
+    echo ""
+    echo "  To isolate work and personal Claude Code accounts:"
+    echo "    bash ~/.claude/setup-profiles.sh"
+    echo ""
+    echo "  Then source the profile aliases from your shell rc:"
+    echo "    Linux/WSL:  echo 'source ~/.claude/claude-profiles.sh' >> ~/.bashrc"
+    echo "    macOS:      echo 'source ~/.claude/claude-profiles.sh' >> ~/.zshrc"
+    echo ""
+    echo "  Log in per profile:"
+    echo "    HOME=~/.claude-profiles/work claude login"
+    echo "    HOME=~/.claude-profiles/personal claude login"
+    echo ""
+    echo "  Use:  claude-work, claude-personal, claude-work-dsp, claude-personal-dsp"
+    echo ""
+}
+
 # Print skill prerequisites
 print_skill_prerequisites() {
     log_info "Skill prerequisites:"
@@ -210,6 +243,7 @@ main() {
     install_skills
     install_agents
     install_hooks
+    install_profiles
     install_settings
 
     echo ""
@@ -219,6 +253,7 @@ main() {
     echo ""
 
     print_plugin_instructions
+    print_profile_instructions
     print_skill_prerequisites
 
     log_success "Configuration installed to $CLAUDE_DIR"

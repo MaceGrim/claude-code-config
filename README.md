@@ -37,6 +37,8 @@ Just run `/seed "your project idea"` and it chains through the whole pipeline wi
 
 ## Quick Start (For Claude Code)
 
+**Setting up on macOS?** Read [`MAC_MIGRATION.md`](./MAC_MIGRATION.md) instead — it handles the WSL-specific paths in `CLAUDE.md` and the zsh/bashrc differences.
+
 If you're a Claude Code instance reading this to install the configuration, follow these exact steps:
 
 ### Step 1: Run the Installation Script
