@@ -82,7 +82,6 @@ Install each plugin (run in Claude Code):
 
 Optional (disabled by default):
 ```
-/plugins install ralph-wiggum
 /plugins install claude-scientific-writer
 ```
 
@@ -174,7 +173,6 @@ Restart Claude Code and verify:
 - `claude-hud` - Status line display with context info
 
 **Optional:**
-- `ralph-wiggum` - Ralph Wiggum quotes (disabled by default)
 - `claude-scientific-writer` - Scientific writing assistance (disabled by default)
 
 ### Settings

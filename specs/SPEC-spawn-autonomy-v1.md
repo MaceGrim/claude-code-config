@@ -267,10 +267,10 @@ shell. Per GH #9567 they come through empty in many configs.
 - Never use guessable names like `<prefix>-spawn-frontend` — on public ntfy.sh
   anyone can publish to a guessable topic and poison your alerts
 
-## Composition with `/ralph` (the user's existing skill, NOT the Anthropic ralph-wiggum plugin)
+## Composition with `/ralph`
 
 `/spawn --autonomy=auto` sets up worktrees + autonomy guardrails. `/ralph`
-(the user's skill) is "what the agent does in the loop." These are orthogonal:
+is "what the agent does in the loop." These are orthogonal:
 
 - After `/spawn --autonomy=auto` lands, the user can attach to a worktree
   window and type `/ralph` to start the autonomous task-loop within that
@@ -279,11 +279,6 @@ shell. Per GH #9567 they come through empty in many configs.
   to ralph this, he'll tell you; otherwise work step-by-step with TaskCreate"
 - We do **NOT** auto-invoke `/ralph` from the initial prompt — composition,
   not coupling
-
-This is explicitly **the user's `/ralph` skill** (run autonomous Ralph loop using
-Claude Code native task tools, fresh context each iteration), not the
-official Anthropic ralph-wiggum plugin (Stop-hook re-feed mechanism).
-the user's skill is the one to use.
 
 ## What ships in the v1 build
 
@@ -364,7 +359,6 @@ project before declaring done.
 
 ## References
 
-- [Anthropic Ralph Wiggum plugin](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) (for pattern, NOT to be used — the user uses his own /ralph skill)
 - [Dicklesworthstone/claude_code_agent_farm](https://github.com/Dicklesworthstone/claude_code_agent_farm)
 - [karanb192/claude-code-hooks](https://github.com/karanb192/claude-code-hooks)
 - [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery)

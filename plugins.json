@@ -43,12 +43,6 @@
       "description": "Python type checking via Pyright LSP"
     },
     {
-      "name": "ralph-wiggum",
-      "marketplace": "claude-plugins-official",
-      "enabled": true,
-      "description": "Ralph Wiggum quotes (fun)"
-    },
-    {
       "name": "playwright",
       "marketplace": "claude-plugins-official",
       "enabled": true,

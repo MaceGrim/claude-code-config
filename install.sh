@@ -181,7 +181,6 @@ print_plugin_instructions() {
     echo "     /plugins install github"
     echo "     /plugins install pr-review-toolkit"
     echo "     /plugins install pyright-lsp"
-    echo "     /plugins install ralph-wiggum"
     echo "     /plugins install playwright"
     echo "     /plugins install code-simplifier"
     echo "     /plugins install claude-hud"

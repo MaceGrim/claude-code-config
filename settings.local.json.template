@@ -10,7 +10,6 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(codex:*)",
       "Bash(gemini:*)",
-      "Skill(ralph-wiggum:help)",
       "Bash(claude --no-input:*)",
       "Bash(claude --print \"/usage\")",
       "Bash(grep:*)"
