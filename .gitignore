@@ -1,0 +1,3 @@
+# Python bytecode (from skills with python scripts)
+__pycache__/
+*.py[cod]

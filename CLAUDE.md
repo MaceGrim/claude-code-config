@@ -1,126 +1,67 @@
-## About the User
+# CLAUDE.md
 
-See `~/.claude/USER_PROFILE.md` for information about who I am, my background, preferences, and how I like to work.
+Bias: caution over speed on non-trivial work. Use judgment on trivial tasks.
 
----
+## User Context
 
-## Resume here (2026-05-25)
+Read `~/.claude/USER_PROFILE.md` before substantial work.
 
-**Current state**: Toolkit shape settled, spec locked, ready to build.
+## Core Working Rules
 
-**Next action**: Build `/spawn --autonomy=auto` per `specs/SPEC-spawn-autonomy-v1.md`. The spec has a 10-step build order; first end-to-end testable artifact lands at step 5 (~90 min in). Total estimate: 7-9 focused hours.
+- Respond naturally and tersely. Do not narrate your process ("Now I'll...", "Let me check..."), and do not impose headed bullet lists on every reply — match format to content.
+- If the conversation has drifted substantially from where we began — new problem, new files, new mental model — surface it and suggest `/compact` or a fresh conversation. Stale context from earlier work degrades judgment on the current work.
+- Make the smallest change that solves the task. No speculative features, abstractions, or cleanup.
+- Touch only what is necessary. Do not refactor, reformat, or "improve" adjacent code unless asked.
+- Read the relevant files before editing: the target file, its exports, immediate callers, and shared utilities it depends on.
+- Match the project's existing conventions, patterns, and style. Do not silently introduce a competing pattern.
+- If requirements are ambiguous, state the ambiguity and ask. If a simpler approach would solve the problem, say so. Do not assume that Mason is always bringing the absolute best idea.
+- If the codebase contains conflicting patterns, choose one deliberately. Prefer the more local, more recent, or better-tested pattern, and say which one you followed.
+- Never editorialize data, benchmark results, or analysis output. Report what the evidence actually shows.
+- If a fact is knowable and verifiable, verify it before replying.
+- Surface uncertainty, skipped work, and failed checks explicitly. Do not imply completion you did not verify.
+- Do not mention Claude in commit messages.
 
-**What's already built this session**:
-- `/spawn` — single-repo parallel git worktrees + tmux + per-worktree BRIEF.md + codex sanity-check on decomposition. Interactive mode works today. Autonomy mode is what we're about to build.
-- `/converge` — iterative codex review until agreement. Two modes: autonomous (default) and interactive (triggered by "step by step" / "involve me" / etc.).
-- `/codex` — unified second-opinion skill with modes (general / review / fact-check / verdict + critique / architecture / plan aliases). Delegates to `codex-runner` subagent. Replaces deprecated `/codex-review`.
+## Testing And Verification
 
-**Read first when you resume**:
-- `specs/SPEC-spawn-autonomy-v1.md` — the build target
-- `TODO.md` — deferred work captured (v1.5 discovery branches, /spike, /day, etc.)
+- Test every single script that you write. Same rule for commands and behaviors you add or change.
+- Verify the requested outcome before replying, not just that the code compiles or the tests start.
+- If a program, script, or command times out, ask whether to simplify it or rerun with more time.
+- Use `test_scripts/` for ad hoc or one-off checks that are useful for fast verification but do not belong in the permanent test suite.
+- Write tests that prove the intended behavior, not just execute code paths.
 
-**The full toolkit shape** (decided, not all built):
+## File Safety
 
-| Skill | Status | What |
-|---|---|---|
-| `/spawn` | v1 building | Single-repo parallel work, all ships, autonomy mode pending |
-| `/converge` | live | Iterative codex loop until agreement |
-| `/codex` | live | Unified second-opinion entry point |
-| `/spike` | v2 deferred | N candidate prototypes, one wins, rest discard (different output topology) |
-| `/day` | v2 deferred | Cross-repo morning orchestration, one tmux window per project |
-| `/workspace` | dropped | Single persona-scoped session — not enough evidence personas warrant their own skill |
-| `/ralph` | live (existing) | Autonomous task loop within a single session — composes with /spawn |
-
-**Codex prompt sizing**: codex hangs at high rate on 5+ cross-cutting questions. Default to 1-4 focused questions per call; parallelize independents. Baked into `/codex` and `/converge` skill bodies.
-
----
-
-* Test every single script that you write.
-* If any particular program or call to a program times out, ask if you should simplify the program or rerun with more time.
-* For each project, create a test_scripts directory. This directory will hold one-off tests that wouldn't otherwise make it into a comprehensive testing of the projects, but are useful for quickly testing small bits of functionality.
-* Don't mention Claude in your commit messages EVER
-* Never editorialize data or analysis results. Only report what the data actually shows. If you haven't verified a claim numerically, don't make it.
-* Before deleting files — whether via `rm`, `git filter-repo`, `git clean`, `git reset --hard`, `find -delete`, moving large directories, or any other destructive operation that could make files unrecoverable — ask whether a copy should be made first. This applies to working-tree files, tracked files, and anything reachable only through git history. "Ask first" is the default even when the user has asked for the deletion; confirm the backup decision specifically.
+- Before any destructive operation, ask whether a backup should be made first.
+- This includes `rm`, `git reset --hard`, `git clean`, `find -delete`, `git filter-repo`, replacing large directories, and deleting anything reachable only through git history.
+- "Ask first" remains the default even if the user requested the deletion. Confirm the backup decision explicitly.
 
 ## Wiki Knowledge Base
 
-When Mason asks a technical "how do I", "what's the best way to", or "how should I approach" question, check `/mnt/o/obsidian_vault/wiki/index.md` for relevant concept pages before answering from general knowledge. The wiki contains detailed, source-cited concept pages from decomposed books and other sources. Follow links into concept pages for code recipes and detailed explanations. Prefer wiki-sourced answers over general knowledge when available — they're more specific and cite exact sources.
+When Mason asks a technical "how do I", "what's the best way to", or "how should I approach" question, check `/mnt/o/obsidian_vault/wiki/index.md` before answering from general knowledge.
 
-When Mason is writing articles, blog posts, or visual essays, check the **Communication Lenses** section of the wiki index for lenses on explanation design, data visualization, and storytelling structure. The lens pages link to detailed raw analyses in `raw/reading-notes/` — read those when you need depth on a specific technique or practitioner. After applying any lens, increment its count and append a log entry in `/mnt/o/obsidian_vault/wiki/concepts/_usage-tracker.md`.
+Prefer wiki-sourced answers when relevant. Follow links into concept pages for source-cited detail, examples, and code recipes.
+
+When helping with articles, blog posts, or visual essays, check the **Communication Lenses** section of the wiki index for explanation, visualization, and storytelling guidance.
+
+After applying a Communication Lens, increment its count and append a log entry in `/mnt/o/obsidian_vault/wiki/concepts/_usage-tracker.md`.
 
 ## Obsidian Vault
 
-Mason's Obsidian vault is at `/mnt/o/obsidian_vault/` (WSL path for `O:\obsidian_vault`).
+Mason's Obsidian vault is at `/mnt/o/obsidian_vault/`.
 
-- **Read and write directly** — the vault is just markdown files, no MCP server needed
-- **Use `[[wiki links]]`** to connect notes (e.g., `[[Project Name]]` links to `Project Name.md`)
-- **Use `[[Note#Heading]]`** to link to specific sections
-- **Use tags** like `#project` or `#project/subtype` for categorization
-- **Use YAML frontmatter** at the top of notes for metadata (status, date, tags, etc.)
-- If Mason asks you to "take notes" or "log this", write to the vault unless told otherwise
-- **When to use Obsidian vs CLAUDE.md:** Obsidian is Mason's persistent knowledge base — write there for context he wants to keep long-term (client feedback, decisions, design principles, meeting notes, status). Project CLAUDE.md files are tactical instructions for the AI — write there for things that should shape how code gets built (data sources, file paths, editorial direction, build patterns). There's natural overlap, and that's fine. When in doubt, add to both.
+- Read and write the vault directly as Markdown files.
+- Use `[[wiki links]]` between notes.
+- Use `[[Note#Heading]]` for section links.
+- Use tags such as `#project` or `#project/subtype` when useful.
+- Use YAML frontmatter for note metadata when appropriate.
+- If Mason asks you to "take notes" or "log this," write to the vault unless told otherwise.
 
-## Autonomous Task Execution
+Use Obsidian for persistent knowledge Mason will want later: decisions, feedback, principles, meeting notes, status, and research.
 
-For autonomous task execution, use the Ralph workflow with Claude Code's native task tools.
+Use project `CLAUDE.md` files for tactical build instructions: data sources, file paths, implementation constraints, editorial direction, and project-specific build patterns.
 
-### Quick Task (simple projects)
-```
-/ralph "Build X that does Y. Done when Z. Verify: command"
-```
+If both are useful, update both.
 
-### Full Pipeline (complex projects)
-```
-/seed   → Interviews you → writes SPEC.md → asks to continue
-        ↓ (if yes)
-        → /adversarial-spec → multi-model debate → PRD.md + prd.json → asks to implement
-        ↓ (if yes)
-        → /ralph → spawns subagents per task → autonomous until done
-```
+## Autonomous Workflows
 
-Just run `/seed "your project idea"` and it chains through the whole pipeline with confirmations at each step.
-
-### Skill Reference
-
-| Skill | Purpose | Output |
-|-------|---------|--------|
-| `/seed` | Deep interview to capture requirements | SPEC.md |
-| `/adversarial-spec` | Multi-model debate (Claude, Codex, Gemini) | PRD.md, TECH_SPEC.md, prd.json |
-| `/ralph` | Autonomous execution with fresh context per task | Completed code |
-| `/ralph status` | Check task progress | TaskList + attempt history |
-| `/council` | Ask Claude, Codex, and Gemini to weigh in on a question | Synthesized answer |
-
-### How /ralph Works
-
-1. **Creates tasks** - From prd.json, inline description, or interview
-2. **Uses Claude Code native tools** - TaskCreate, TaskList, TaskUpdate
-3. **Spawns subagents** - Each task gets a fresh context via Task tool
-4. **Verifies results** - Runs test commands to confirm completion
-5. **Retries with context** - Failed attempts inform future retries
-6. **Saves progress** - ralph-progress.json survives session interruptions
-
-### Ralph Features
-
-| Feature | How it works |
-|---------|--------------|
-| Fresh context per task | Subagents don't accumulate context pollution |
-| Retry with learning | Failed attempts logged with diagnosis, inform next retry |
-| Session recovery | ralph-progress.json preserves state across sessions |
-| Max 3 attempts | Stops after 3 failures, reports what went wrong |
-| Parallel execution | Unblocked tasks can run simultaneously |
-
-### Tips
-
-- **Always include verification commands** - "Verify: pytest tests/" or "Verify: curl localhost:3000"
-- **Break large tasks into subtasks** - Ralph works best with focused, single-purpose tasks
-- **Use /seed for complex projects** - The interview captures requirements thoroughly
-- **Check progress with `/ralph status`** - See what's done, in progress, or blocked
-- **Recovery is automatic** - If session dies, just run `/ralph` again
-
-### Key Files
-
-- `~/.claude/commands/ralph.md` - Ralph loop skill
-- `~/.claude/commands/adversarial-spec.md` - Multi-model spec debate
-- `~/.claude/commands/seed.md` - Deep interview for SPEC.md
-- `~/.claude/commands/council.md` - Multi-model consultation
-- `ralph-progress.json` - Progress file (created per project)
+For multi-step project execution, the chain is `/seed` → `/adversarial-spec` → `/ralph`. Each skill self-describes; the chain is the one thing they don't tell you on their own.
