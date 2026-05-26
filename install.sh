@@ -88,7 +88,15 @@ install_skills() {
         if [[ -d "$skill_dir" ]]; then
             local name
             name=$(basename "$skill_dir")
-            run_cmd cp -r "$skill_dir" "$CLAUDE_DIR/skills/"
+            # Remove any existing copy so the install is clean and we don't
+            # accumulate stale files removed upstream.
+            if [[ -d "$CLAUDE_DIR/skills/$name" ]]; then
+                run_cmd rm -rf "$CLAUDE_DIR/skills/$name"
+            fi
+            # Strip the trailing slash so macOS BSD cp creates a wrapping
+            # subdir instead of dumping the source's contents at the top
+            # level of the destination.
+            run_cmd cp -r "${skill_dir%/}" "$CLAUDE_DIR/skills/"
             if compgen -G "$CLAUDE_DIR/skills/$name/scripts/*" > /dev/null; then
                 run_cmd chmod +x "$CLAUDE_DIR/skills/$name/scripts/"*
             fi
