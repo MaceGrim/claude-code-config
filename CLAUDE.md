@@ -4,6 +4,37 @@ See `~/.claude/USER_PROFILE.md` for information about who I am, my background, p
 
 ---
 
+## Resume here (2026-05-25)
+
+**Current state**: Toolkit shape settled, spec locked, ready to build.
+
+**Next action**: Build `/spawn --autonomy=auto` per `specs/SPEC-spawn-autonomy-v1.md`. The spec has a 10-step build order; first end-to-end testable artifact lands at step 5 (~90 min in). Total estimate: 7-9 focused hours.
+
+**What's already built this session**:
+- `/spawn` — single-repo parallel git worktrees + tmux + per-worktree BRIEF.md + codex sanity-check on decomposition. Interactive mode works today. Autonomy mode is what we're about to build.
+- `/converge` — iterative codex review until agreement. Two modes: autonomous (default) and interactive (triggered by "step by step" / "involve me" / etc.).
+- `/codex` — unified second-opinion skill with modes (general / review / fact-check / verdict + critique / architecture / plan aliases). Delegates to `codex-runner` subagent. Replaces deprecated `/codex-review`.
+
+**Read first when you resume**:
+- `specs/SPEC-spawn-autonomy-v1.md` — the build target
+- `TODO.md` — deferred work captured (v1.5 discovery branches, /spike, /day, etc.)
+
+**The full toolkit shape** (decided, not all built):
+
+| Skill | Status | What |
+|---|---|---|
+| `/spawn` | v1 building | Single-repo parallel work, all ships, autonomy mode pending |
+| `/converge` | live | Iterative codex loop until agreement |
+| `/codex` | live | Unified second-opinion entry point |
+| `/spike` | v2 deferred | N candidate prototypes, one wins, rest discard (different output topology) |
+| `/day` | v2 deferred | Cross-repo morning orchestration, one tmux window per project |
+| `/workspace` | dropped | Single persona-scoped session — not enough evidence personas warrant their own skill |
+| `/ralph` | live (existing) | Autonomous task loop within a single session — composes with /spawn |
+
+**Codex prompt sizing**: codex hangs at high rate on 5+ cross-cutting questions. Default to 1-4 focused questions per call; parallelize independents. Baked into `/codex` and `/converge` skill bodies.
+
+---
+
 * Test every single script that you write.
 * If any particular program or call to a program times out, ask if you should simplify the program or rerun with more time.
 * For each project, create a test_scripts directory. This directory will hold one-off tests that wouldn't otherwise make it into a comprehensive testing of the projects, but are useful for quickly testing small bits of functionality.
