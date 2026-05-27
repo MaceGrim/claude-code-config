@@ -127,6 +127,21 @@ The **portable, required** primitive is the same on both machines:
 claude --worktree <name> --tmux
 ```
 
+For the **multi-pane, several-worktrees-at-once** version (what felt good in
+testing), use the bundled portable script — same command on Mac and WSL, no
+AppleScript:
+
+```sh
+~/.claude/skills/spawn/scripts/spawn-tmux.sh core-rules ui-and-flow ai-opponent
+# --install-deps  apt/brew-installs tmux if missing
+# --base <ref>    base branch for the new worktrees (auto: dev/main/HEAD)
+# --prompt <text> initial prompt broadcast to every pane's claude
+# --no-attach     create panes without attaching (scripting/tests)
+```
+
+It creates one worktree + branch per slug, tiles one Claude pane per worktree,
+and attaches in your current terminal (the portable "open").
+
 That creates the worktree + a tmux session. The only thing that differs is the
 *optional* "pop open a fresh terminal window for me" convenience — and you
 should treat it as optional sugar, never as load-bearing. The reliable fallback
