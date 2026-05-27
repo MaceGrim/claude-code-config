@@ -1,0 +1,20 @@
+# Canonical plugin set — the single source of truth that the install.sh
+# instructions and doctor.sh both read. Plugins still install MANUALLY inside
+# Claude Code (/plugins ...), but listing them here makes drift detectable:
+# doctor.sh reports which of these are present under ~/.claude/plugins.
+#
+# Format:
+#   marketplace <name> <source>
+#   plugin <name>
+
+marketplace official            anthropics/claude-plugins-official
+marketplace claude-hud          jarrodwatts/claude-hud
+marketplace scientific-writer   k-dense-ai/claude-scientific-writer
+
+plugin frontend-design
+plugin github
+plugin pr-review-toolkit
+plugin pyright-lsp
+plugin playwright
+plugin code-simplifier
+plugin claude-hud

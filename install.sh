@@ -155,6 +155,27 @@ install_profiles() {
     fi
 }
 
+# Install sync/doctor tooling + machine-readable spec files
+install_tooling() {
+    log_info "Installing sync/doctor tooling..."
+    if [[ -f "$SCRIPT_DIR/doctor.sh" ]]; then
+        run_cmd cp "$SCRIPT_DIR/doctor.sh" "$CLAUDE_DIR/doctor.sh"
+        run_cmd chmod +x "$CLAUDE_DIR/doctor.sh"
+        log_success "  Installed: doctor.sh"
+    fi
+    for f in plugins.txt tool-versions.txt; do
+        if [[ -f "$SCRIPT_DIR/$f" ]]; then
+            run_cmd cp "$SCRIPT_DIR/$f" "$CLAUDE_DIR/$f"
+            log_success "  Installed: $f"
+        fi
+    done
+    # Stamp the repo commit so doctor.sh can detect install-vs-repo drift.
+    if git -C "$SCRIPT_DIR" rev-parse HEAD >/dev/null 2>&1; then
+        run_cmd bash -c "git -C '$SCRIPT_DIR' rev-parse HEAD > '$CLAUDE_DIR/.installed-commit'"
+        log_success "  Stamped .installed-commit"
+    fi
+}
+
 # Install settings
 install_settings() {
     log_info "Installing settings..."
@@ -251,6 +272,7 @@ main() {
     install_agents
     install_hooks
     install_profiles
+    install_tooling
     install_settings
 
     echo ""

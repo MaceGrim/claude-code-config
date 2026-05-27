@@ -1,0 +1,14 @@
+# Enforce LF line endings so shell-script shebangs and hooks never get
+# CRLF-mangled when the repo is touched by a Windows-side git. WSL/macOS both
+# want LF. Renormalize once after adding this: `git add --renormalize .`
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.bash text eol=lf
+*.py   text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.txt  text eol=lf
+
+# Add binary asset patterns here as the repo grows, e.g.:
+# *.png binary

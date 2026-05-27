@@ -1,0 +1,14 @@
+# Expected external tools for full parity across machines.
+# doctor.sh reads this: presence of a `required` tool is a hard check (FAIL if
+# missing); version is best-effort informational (WARN if below min, never fail).
+# Columns:  name  min_version  requirement  notes...
+#           (use "-" for min_version when any version is fine)
+
+claude   2.1.0  required   Claude Code CLI (npm i -g @anthropic-ai/claude-code)
+git      2.30   required   -
+tmux     3.0    required   parallel worktree panes (claude --worktree --tmux)
+bash     3.2    required   hooks + these scripts (macOS ships 3.2; that's fine)
+node     18     required   Claude Code runtime (via nvm)
+python3  3.9    optional   some skills (e.g. gemini-image)
+codex    -      optional   /codex, /council, /adversarial-spec (npm i -g @openai/codex)
+gemini   -      optional   /council, /adversarial-spec, gemini-image (npm i -g @google/gemini-cli)
